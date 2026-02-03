@@ -4,9 +4,10 @@ A Python project that processes NetCDF structural analysis data to generate inte
 
 ## Overview
 
-This project analyzes force and moment data from a finite element analysis (FEA) of a bridge structure and creates interactive visualizations using Plotly. It includes:
-- **2D visualization** of the central girder with SFD and BMD
-- **3D visualization** of the entire bridge structure showing force distributions
+This project analyzes force and moment data from a finite element analysis (FEA) of a bridge structure and creates interactive visualizations using Plotly. The project is organized into two main tasks:
+
+- **Task 1: 2D Visualization** - Analyze and visualize the central longitudinal girder
+- **Task 2: 3D Visualization** - Create 3D visualizations for the entire bridge structure
 
 ## What's Used
 
@@ -15,28 +16,31 @@ This project analyzes force and moment data from a finite element analysis (FEA)
 - **xarray** - Reading and processing NetCDF files
 - **netCDF4** - NetCDF file format support
 - **Plotly** - Interactive 2D/3D visualization
-- **Pandas** - Data manipulation and analysis
 - **NumPy** - Numerical computing
+- **Pandas** - Data manipulation and analysis
 
-### Data Files
-- `screening_task.nc` - NetCDF file containing FEA results (forces, moments, displacements)
-- `node.py` - Bridge node coordinates (x, y, z)
-- `element.py` - Element connectivity information (member IDs and connected nodes)
+### Data Files & Geometry
+- `screening_task.nc` - NetCDF file containing FEA results with forces and moments for 85 elements
+- `node.py` - Defines 50 bridge node coordinates in 3D space (x, y, z)
+- `element.py` - Defines 85 structural elements with their connectivity (start node, end node)
 
 ## Project Structure
 
 ```
+.
 ├── Task1/
-│   └── visualize_2d.py          # 2D SFD/BMD visualization script
+│   └── visualize_2d.py              # Task 1: 2D visualization script
 ├── Task2/
-│   └── visualize_3d.py          # 3D bridge visualization script
-├── node.py                       # Node coordinate definitions
-├── element.py                    # Element connectivity definitions
-├── inspect_nc.py                 # Utility to inspect NetCDF file structure
-├── SFD_BMD_Central_Girder.html   # 2D interactive plot output
-├── 3D_SFD_Bridge.html            # 3D SFD visualization output
-├── 3D_BMD_Bridge.html            # 3D BMD visualization output
-└── README.md                      # This file
+│   └── visualize_3d.py              # Task 2: 3D visualization script
+├── node.py                          # Node coordinate definitions (50 nodes)
+├── element.py                       # Element connectivity definitions (85 elements)
+├── screening_task.nc                # NetCDF file with FEA results
+├── inspect_nc.py                    # Utility script to inspect NetCDF structure
+├── SFD_BMD_Central_Girder.html      # Output: Task 1 - 2D interactive plots
+├── 3D_SFD_Bridge.html               # Output: Task 2 - 3D SFD visualization
+├── 3D_BMD_Bridge.html               # Output: Task 2 - 3D BMD visualization
+├── Report.md                         # Original project report
+└── README.md                         # This file
 ```
 
 ## Installation & Setup
@@ -54,87 +58,261 @@ pip install xarray netcdf4 plotly pandas numpy
 
 ### Step 2: Verify Data Files
 
-Ensure `screening_task.nc` is in the project directory. If not, place it in the root folder.
+Ensure all required files are in the project directory:
+- `screening_task.nc` - FEA results file
+- `node.py` - Node definitions
+- `element.py` - Element definitions
 
-## How to Operate
+---
 
-### Generate 2D Plots (Central Girder Analysis)
+## Task 1: 2D Visualization (Central Girder)
 
-Run the following command to create SFD and BMD plots for the central longitudinal girder:
+### Overview
+Task 1 analyzes and visualizes the Shear Force and Bending Moment Diagrams for the **central longitudinal girder** of the bridge. The central girder consists of 9 elements spanning the length of the bridge.
 
+**Central Girder Elements:** [15, 24, 33, 42, 51, 60, 69, 78, 83]
+
+### How to Run
+
+Execute the following command:
 ```bash
 python Task1/visualize_2d.py
 ```
 
-**Output:** `SFD_BMD_Central_Girder.html`
+### Output
+**File:** `SFD_BMD_Central_Girder.html`
 
-This creates an interactive plot with:
-- Shear Force Diagram (filled area)
-- Bending Moment Diagram (filled area)
-- Hover tooltips showing exact force/moment values at each point
+This generates an interactive 2D plot containing:
+- **Shear Force Diagram (SFD)** - Blue filled area showing shear forces along the girder
+- **Bending Moment Diagram (BMD)** - Orange filled area showing bending moments along the girder
+- X-axis: Distance along the girder (in structural units)
+- Y-axis: Force magnitude (SFD in kN, BMD in kN·m)
 
-**How to view:** Open the HTML file in any web browser (Chrome, Firefox, Edge, Safari)
+### Features
+- **Interactive hover** - Move your cursor over the plot to see exact values
+- **Zoom** - Scroll wheel to zoom in/out
+- **Pan** - Click and drag to move around the plot
+- **Legend** - Click legend items to toggle diagram visibility
 
-### Generate 3D Plots (Full Bridge Analysis)
+### How It Works
+1. Identifies the 9 central girder elements from `element.py`
+2. Reads force and moment data from `screening_task.nc` for each element
+3. Extracts shear force values (Vy_i, Vy_j) at element start and end nodes
+4. Extracts bending moment values (Mz_i, Mz_j) at element start and end nodes
+5. Calculates element lengths using 3D node coordinates from `node.py`
+6. Creates continuous diagrams by combining all elements sequentially
+7. Generates Plotly visualization with both diagrams overlaid
 
-Run the following command to visualize the entire bridge structure in 3D:
+### Data Mapping
+- **Vy_i** - Shear force at element start node
+- **Vy_j** - Shear force at element end node
+- **Mz_i** - Bending moment at element start node
+- **Mz_j** - Bending moment at element end node
 
+---
+
+## Task 2: 3D Visualization (Entire Bridge)
+
+### Overview
+Task 2 creates comprehensive 3D visualizations of the entire bridge structure, showing force distributions across all 5 longitudinal girders. Each girder contains 9 elements, making a total of 45 elements analyzed.
+
+**Bridge Girders:**
+- Girder 1: [13, 22, 31, 40, 49, 58, 67, 76, 81]
+- Girder 2: [14, 23, 32, 41, 50, 59, 68, 77, 82]
+- Girder 3: [15, 24, 33, 42, 51, 60, 69, 78, 83] (Central)
+- Girder 4: [16, 25, 34, 43, 52, 61, 70, 79, 84]
+- Girder 5: [17, 26, 35, 44, 53, 62, 71, 80, 85]
+
+### How to Run
+
+Execute the following command:
 ```bash
 python Task2/visualize_3d.py
 ```
 
-**Outputs:** 
-- `3D_SFD_Bridge.html` - Shear Force Diagram in 3D
-- `3D_BMD_Bridge.html` - Bending Moment Diagram in 3D
+### Outputs
+Two separate HTML files are generated:
 
-**How to view:** Open the HTML files in your browser. You can:
-- **Rotate** - Click and drag
-- **Zoom** - Scroll wheel
-- **Pan** - Right-click and drag
-- **Hover** - See values for specific elements
+**File 1:** `3D_SFD_Bridge.html` - Shear Force Diagram in 3D
+**File 2:** `3D_BMD_Bridge.html` - Bending Moment Diagram in 3D
+
+### Features
+- **3D Visualization** - Full bridge geometry with force extrusions
+- **Interactive Controls:**
+  - **Rotate** - Click and drag to rotate the view
+  - **Zoom** - Scroll wheel to zoom in/out
+  - **Pan** - Right-click and drag to pan
+  - **Hover** - See values for individual elements
+- **Color Coding** - Different colors for SFD and BMD
+- **Scalable Extrusions** - Force magnitudes are scaled for visibility
+
+### How It Works
+1. Loads all 5 girders with their element definitions from `element.py`
+2. Reads force and moment data from `screening_task.nc` for all elements
+3. Retrieves 3D node coordinates from `node.py` for each element
+4. For each element:
+   - Creates a line segment between start and end nodes
+   - **Extrudes** the element perpendicular to the bridge plane (Y-direction)
+   - Extrusion height represents force/moment magnitude (scaled for visibility)
+   - Creates a 3D mesh surface showing the force distribution
+5. Generates two separate figures:
+   - **SFD Figure:** Shows Vy (shear force) extrusions with blue coloring
+   - **BMD Figure:** Shows Mz (bending moment) extrusions with orange coloring
+6. Combines all girders into a complete bridge visualization
+
+### Scale Factors
+- **SFD Scale:** 0.5 (adjusts shear force visibility)
+- **BMD Scale:** 0.2 (adjusts moment visualization)
+
+These factors can be modified in `Task2/visualize_3d.py` if diagrams appear too small or too large.
+
+### Interpretation
+- **Higher extrusions** indicate larger force or moment values
+- **Negative values** extend in the opposite direction
+- **Smooth transitions** between elements show force flow through the structure
+- **Multiple girders** can be compared visually in a single 3D view
+
+---
+
+## How to Operate
+
+### Quick Start
+```bash
+# Task 1: Generate 2D plots
+python Task1/visualize_2d.py
+
+# Task 2: Generate 3D plots
+python Task2/visualize_3d.py
+```
+
+### Viewing Results
+1. Open the generated HTML files in any modern web browser (Chrome, Firefox, Edge, Safari)
+2. Use mouse interactions to explore:
+   - For 2D plots: Hover, zoom, pan
+   - For 3D plots: Rotate, zoom, pan
+3. All data is embedded in the HTML - no internet connection required
+
+### Inspecting NetCDF Data
+To examine the raw NetCDF file structure:
+```bash
+python inspect_nc.py
+```
+
+This creates `inspect_output.txt` with variable names, dimensions, and available data components.
+
+---
 
 ## Methodology
 
-### Data Processing
-1. **Load data** from `screening_task.nc` using xarray
-2. **Import geometry** from `node.py` and `element.py`
-3. **Extract force/moment components** for each structural element
-4. **Filter and organize** data by girder location
+### Data Processing Pipeline
+1. **Load NetCDF File** → Read FEA results using xarray
+2. **Import Geometry** → Parse node coordinates and element connectivity
+3. **Extract Values** → Retrieve Vy and Mz components for each element
+4. **Calculate Properties** → Compute element lengths from node coordinates
+5. **Generate Visualization** → Create Plotly plots with appropriate scaling
 
-### 2D Visualization (Task 1)
-- Identifies elements of the central girder
-- Extracts shear forces and moments at element start/end points
-- Plots continuous filled area diagrams using Plotly
-- Creates interactive hover information
+### 2D Visualization Algorithm (Task 1)
+```
+For each central girder element:
+  1. Get start and end node IDs
+  2. Retrieve Vy_i, Vy_j (shear forces)
+  3. Retrieve Mz_i, Mz_j (bending moments)
+  4. Calculate element length from coordinates
+  5. Accumulate distance along girder
+  6. Plot continuous filled areas
+```
 
-### 3D Visualization (Task 2)
-- Iterates through all girders in the structure
-- Creates 3D frame representation using node coordinates
-- "Extrudes" force diagrams perpendicular to elements
-- Force magnitude determines extrusion height
-- Creates realistic 3D effect similar to structural analysis software
+### 3D Visualization Algorithm (Task 2)
+```
+For each bridge element:
+  1. Get start and end node positions
+  2. Retrieve force/moment values
+  3. Create extrusion mesh:
+     - Bottom face: element line
+     - Top face: element line + force offset
+     - Height: proportional to force magnitude
+  4. Apply color based on force type (SFD/BMD)
+  5. Combine all element meshes in 3D plot
+```
+
+---
 
 ## Troubleshooting
 
-### Import Errors
-If you get `ModuleNotFoundError`, ensure dependencies are installed:
+### Python/Import Errors
+**Error:** `ModuleNotFoundError: No module named 'xarray'`
+
+**Solution:** Reinstall all dependencies
 ```bash
 pip install --upgrade xarray netcdf4 plotly pandas numpy
 ```
 
-### NetCDF File Not Found
-Ensure `screening_task.nc` is in the same directory as the Python scripts, or update the file path in the scripts.
+### NetCDF File Issues
+**Error:** `FileNotFoundError: screening_task.nc`
 
-### HTML Files Won't Open
-- Make sure you have a modern web browser installed
-- Try opening with a different browser
-- Check that the file wasn't corrupted during processing
+**Solution:** Ensure the NetCDF file is in the root directory where the scripts run from. Check with:
+```bash
+python inspect_nc.py
+```
+
+### HTML Files Won't Display
+**Issue:** Browser shows blank page or error
+
+**Solutions:**
+- Try a different browser (Chrome is recommended)
+- Disable browser extensions that might block scripts
+- Check browser console (F12) for error messages
+- Ensure JavaScript is enabled
+
+### Diagrams Appear Too Small/Large
+**Issue:** Force extrusions aren't visible or too extreme
+
+**Solution:** Modify scale factors in the scripts:
+- **Task 1:** Adjust plot ranges in `visualize_2d.py`
+- **Task 2:** Change `SCALE_SFD` and `SCALE_BMD` variables in `visualize_3d.py`
+
+### Missing Components in Data
+**Error:** "Vy_i NOT found" or similar when running inspect
+
+**Note:** The NetCDF file contains force components. If certain components are missing, they may not be part of the analysis. Check the actual components using:
+```bash
+python inspect_nc.py
+```
+
+---
+
+## Technical Details
+
+### Bridge Geometry
+- **Span Length:** 25 units (in structure)
+- **Total Nodes:** 50
+- **Total Elements:** 85 (including vertical and transverse members)
+- **Longitudinal Girders:** 5 (each with 9 elements)
+- **Coordinate System:** 3D Cartesian (x, y, z)
+
+### Data Structure (screening_task.nc)
+- **Dimensions:** Element (85), Component (30)
+- **Variable:** forces (Element, Component) → float64 array
+- **Components:** Include Vy_i, Vy_j, Mz_i, Mz_j, and others
+- **Units:** Typically kN (kilonewtons) and kN·m (kilonewton-meters)
+
+### File Dependencies
+| File | Purpose | Used By |
+|------|---------|---------|
+| `node.py` | 3D coordinates of 50 bridge nodes | Both tasks |
+| `element.py` | Connectivity of 85 structural elements | Both tasks |
+| `screening_task.nc` | FEA analysis results | Both tasks |
+
+---
 
 ## Notes
 
-- All HTML outputs are self-contained and can be shared without additional files
-- The visualization is interactive - you can zoom, pan, and inspect individual elements
-- Force values are in the units specified in your FEA software (typically kN for forces, kN·m for moments)
+- All HTML outputs are **self-contained** and can be shared without additional files
+- Visualizations are fully **interactive** - no external internet required
+- Force units depend on your FEA software (typically kN and kN·m)
+- The 3D extrusion method provides an intuitive representation similar to professional structural analysis software
+
+---
 
 ## License
 
